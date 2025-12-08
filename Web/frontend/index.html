@@ -94,7 +94,7 @@
 
       <label for="snippetArea">Paste code / notes</label>
       <textarea id="snippetArea" placeholder="Paste code, explanation, commands... (markdown or plain text is fine)"></textarea>
-
+            
       <div class="row">
         <div class="col">
           <label for="author">Author (optional)</label>
@@ -196,7 +196,7 @@
       alert('Saved locally — use Export to download a JSON of saved snippets.');
     });
 
-    // export
+    // export snippets
     document.getElementById('exportSnippetBtn').addEventListener('click', ()=>{
       if(!currentKey) return; const arr = loadSnippets(currentKey); const blob = new Blob([JSON.stringify(arr,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(currentKey+'.json'); a.click(); URL.revokeObjectURL(a.href);
     });
