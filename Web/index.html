@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Landing Space — Feature Collection</title>
+  <style>
+    :root{--bg:#071029;--card:#0e2133;--accent:#7c3aed;--muted:#9fb0c8}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,var(--bg),#021024);font-family:Inter,system-ui,Arial;color:#e8f0fb;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:900px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:14px;padding:28px;box-shadow:0 10px 40px rgba(2,6,23,0.6)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:4px 0 0;color:var(--muted);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+    .card{background:var(--card);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;align-items:stretch;transition:transform .22s}
+    .card:hover{transform:translateY(-6px)}
+    .card h3{margin:0 0 6px;font-size:15px}
+    .card p{margin:0;color:var(--muted);font-size:13px}
+    .actions{margin-top:12px;display:flex;gap:8px}
+    .btn{flex:1;padding:10px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#0ea5a7);color:white;font-weight:600;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:40}
+    .modal{width:min(900px,96%);max-height:86vh;overflow:auto;background:#071029;padding:18px;border-radius:12px}
+    label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
+    textarea, input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
+    textarea{min-height:220px;font-family:monospace}
+    .meta{font-size:13px;color:var(--muted);margin-top:8px}
+
+    .row{display:flex;gap:10px;margin-top:12px}
+    .row .col{flex:1}
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    @media (max-width:760px){.grid{grid-template-columns:1fr}.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Landing Space</h1>
+        <p class="lead">Three entry points. Users can open each panel and leave code or notes for a feature.</p>
+      </div>
+      <div>
+        <!-- Placeholder for branding or nav -->
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card" id="card-wapp">
+        <h3>Wappalyzer</h3>
+        <p>Button opens a panel where contributors can paste code snippets, configuration, or integration notes.</p>
+        <div class="actions"><button class="btn" data-open="wapp">Open panel</button></div>
+      </section>
+
+      <section class="card" id="card-ssl">
+        <h3>SSL Certificate</h3>
+        <p>Panel for scripts to check/compute cert expiry, cron examples, or API snippets.</p>
+        <div class="actions"><button class="btn" data-open="ssl">Open panel</button></div>
+      </section>
+
+      <section class="card" id="card-feat">
+        <h3>Feature Submission</h3>
+        <p>Collect feature ideas, paste sample code, or attach quick instructions for maintainers.</p>
+        <div class="actions"><button class="btn" data-open="feat">Open panel</button></div>
+      </section>
+    </main>
+
+    <footer>
+      <small>All content saved locally in your browser. Use the export button inside each panel to download snippets.</small>
+    </footer>
+  </div>
+
+  <!-- Modal structure (single modal reused for all three panels) -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h2 id="modalTitle">Panel</h2>
+      <p class="meta" id="modalHint">A place for contributors to paste code, notes, or integration steps.</p>
+
+      <!--
+        NOTE TO DEVELOPERS / USERS:
+        - This textarea is where users should paste code snippets or detailed instructions.
+        - You can extend this layout to accept file uploads or link to GitHub Gists.
+        - Snippets are saved to localStorage under keys: 'landing_wapp', 'landing_ssl', 'landing_feat'.
+        - To change storage behavior or forward submissions to your backend, modify the `saveSnippet` function in the <script> section below.
+      -->
+
+      <label for="snippetTitle">Title (short)</label>
+      <input id="snippetTitle" placeholder="e.g. 'Node script to fetch cert'" />
+
+      <label for="snippetArea">Paste code / notes</label>
+      <textarea id="snippetArea" placeholder="Paste code, explanation, commands... (markdown or plain text is fine)"></textarea>
+
+      <div class="row">
+        <div class="col">
+          <label for="author">Author (optional)</label>
+          <input id="author" placeholder="Your name or handle" />
+        </div>
+        <div class="col">
+          <label for="tags">Tags (comma separated)</label>
+          <input id="tags" placeholder="e.g. nodejs, ssl, cron" />
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn ghost" id="closeModal">Close</button>
+        <button class="btn" id="saveSnippetBtn">Save snippet</button>
+        <button class="btn ghost" id="exportSnippetBtn">Export</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <strong>Saved snippets</strong>
+        <div id="savedList" class="meta">—</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Keys mapping for each panel
+    const KEYS = { wapp: 'landing_wapp', ssl: 'landing_ssl', feat: 'landing_feat' };
+
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalHint = document.getElementById('modalHint');
+    const snippetArea = document.getElementById('snippetArea');
+    const snippetTitle = document.getElementById('snippetTitle');
+    const savedList = document.getElementById('savedList');
+    const authorInput = document.getElementById('author');
+    const tagsInput = document.getElementById('tags');
+
+    let currentKey = null;
+
+    // open buttons
+    document.querySelectorAll('[data-open]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.dataset.open; openPanel(id);
+      })
+    });
+
+    function openPanel(id){
+      currentKey = KEYS[id];
+      modalTitle.textContent = id === 'wapp' ? 'Wappalyzer — Contributions' : id === 'ssl' ? 'SSL Certificate — Contributions' : 'Feature Submission — Contributions';
+      modalHint.textContent = 'Paste code, commands, or notes below. Saved locally in your browser.';
+      snippetArea.value = '';
+      snippetTitle.value = '';
+      authorInput.value = '';
+      tagsInput.value = '';
+      renderSaved();
+      modal.style.display = 'flex';
+    }
+
+    document.getElementById('closeModal').addEventListener('click', ()=>{ modal.style.display='none'; });
+    document.getElementById('modal').addEventListener('click', (ev)=>{ if(ev.target.id==='modal') modal.style.display='none'; });
+
+    function loadSnippets(key){
+      try{const raw = localStorage.getItem(key); return raw? JSON.parse(raw): []}catch(e){return []}
+    }
+    function saveSnippets(key, arr){ localStorage.setItem(key, JSON.stringify(arr)); }
+
+    function renderSaved(){
+      if(!currentKey) return;
+      const list = loadSnippets(currentKey);
+      if(!list.length){ savedList.textContent = 'No snippets saved yet.'; return }
+      savedList.innerHTML = '';
+      // show latest first
+      list.slice().reverse().forEach((s, idx)=>{
+        const d = document.createElement('div'); d.style.padding='8px 0'; d.style.borderBottom='1px solid rgba(255,255,255,0.03)';
+        d.innerHTML = `<div style="font-weight:700">${escapeHtml(s.title||'(untitled)')} <span style='font-weight:400;color:var(--muted);font-size:12px'>by ${escapeHtml(s.author||'anon')} — ${new Date(s.ts).toLocaleString()}</span></div><div style='font-family:monospace;white-space:pre-wrap;margin-top:6px;color:#dfeeff'>${escapeHtml(s.content.slice(0,400))}${s.content.length>400? '...':''}</div><div style='margin-top:6px'><button class='btn ghost' data-idx='${list.length-1-idx}' data-act='load'>Load</button> <button class='btn' data-idx='${list.length-1-idx}' data-act='delete'>Delete</button></div>`;
+        savedList.appendChild(d);
+      });
+      // attach handlers
+      savedList.querySelectorAll('button[data-act]').forEach(b=>b.addEventListener('click', (ev)=>{
+        const act = ev.target.dataset.act; const idx = Number(ev.target.dataset.idx); const arr = loadSnippets(currentKey);
+        if(act==='load'){ const item = arr[idx]; snippetTitle.value=item.title; snippetArea.value=item.content; authorInput.value=item.author||''; tagsInput.value=(item.tags||[]).join(', '); }
+        if(act==='delete'){ if(confirm('Delete this snippet?')){ arr.splice(idx,1); saveSnippets(currentKey,arr); renderSaved(); }}
+      }));
+    }
+
+    // save snippet
+    document.getElementById('saveSnippetBtn').addEventListener('click', ()=>{
+      if(!currentKey) return alert('No panel open');
+      const content = snippetArea.value.trim(); if(!content) return alert('Paste some code or notes');
+      const title = snippetTitle.value.trim() || '(untitled)';
+      const author = authorInput.value.trim();
+      const tags = tagsInput.value.split(',').map(t=>t.trim()).filter(Boolean);
+      const arr = loadSnippets(currentKey);
+      arr.push({title,content,author,tags,ts:Date.now()});
+      saveSnippets(currentKey,arr);
+      snippetArea.value=''; snippetTitle.value=''; tagsInput.value=''; authorInput.value='';
+      renderSaved();
+      alert('Saved locally — use Export to download a JSON of saved snippets.');
+    });
+
+    // export
+    document.getElementById('exportSnippetBtn').addEventListener('click', ()=>{
+      if(!currentKey) return; const arr = loadSnippets(currentKey); const blob = new Blob([JSON.stringify(arr,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(currentKey+'.json'); a.click(); URL.revokeObjectURL(a.href);
+    });
+
+    function escapeHtml(str){ return (str||'').replace(/[&<>\"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+    // Initial: nothing open
+  </script>
+</body>
+</html>
