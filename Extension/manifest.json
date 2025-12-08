@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Cookielicious",
+  "version": "1.0",
+  "description": "Cookie scanner with table view",
+  "permissions": ["cookies", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
